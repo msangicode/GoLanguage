@@ -1,9 +1,11 @@
 package main
 
+import "sync"
+
 type Course struct {
-	Code         string
-	Title        string
-	MaxStudents  int
+	Code          string
+	Title         string
+	MaxStudents   int
 	EnrolledCount int
 }
 
@@ -11,6 +13,7 @@ type TrainingCenter struct {
 	Name    string
 	Program string
 	Courses map[string]*Course
+	mu      sync.Mutex
 }
 
 func NewTrainingCenter(name string) *TrainingCenter {
@@ -22,6 +25,9 @@ func NewTrainingCenter(name string) *TrainingCenter {
 }
 
 func (tc *TrainingCenter) AddCourse(code string, title string, maxStudents int) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
 	if _, exists := tc.Courses[code]; exists {
 		return
 	}
@@ -34,6 +40,9 @@ func (tc *TrainingCenter) AddCourse(code string, title string, maxStudents int) 
 }
 
 func (tc *TrainingCenter) EnrollStudent(code string) bool {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
 	course, exists := tc.Courses[code]
 	if !exists || course.EnrolledCount >= course.MaxStudents {
 		return false
@@ -44,6 +53,9 @@ func (tc *TrainingCenter) EnrollStudent(code string) bool {
 }
 
 func (tc *TrainingCenter) TotalEnrollments() int {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+
 	total := 0
 	for _, course := range tc.Courses {
 		total += course.EnrolledCount
