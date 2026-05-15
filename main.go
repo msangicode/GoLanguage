@@ -229,7 +229,7 @@ func promptBool(scanner *bufio.Scanner, label string) (bool, bool) {
 		return false, false
 	}
 
-	normalized := strings.ToLower(strings.TrimSpace(value))
+	normalized := strings.ToLower(value)
 	switch normalized {
 	case "yes", "y", "true", "1":
 		return true, true

@@ -46,6 +46,7 @@ type Booking struct {
 type HouseManager struct {
 	houses        map[int]House
 	bookings      map[int]Booking
+	bookingCounts map[int]int
 	nextHouseID   int
 	nextBookingID int
 }
@@ -54,6 +55,7 @@ func NewHouseManager() *HouseManager {
 	return &HouseManager{
 		houses:        make(map[int]House),
 		bookings:      make(map[int]Booking),
+		bookingCounts: make(map[int]int),
 		nextHouseID:   1,
 		nextBookingID: 1,
 	}
@@ -111,14 +113,12 @@ func (m *HouseManager) DeleteHouse(id int) error {
 	if _, exists := m.houses[id]; !exists {
 		return ErrHouseNotFound
 	}
-
-	for _, booking := range m.bookings {
-		if booking.HouseID == id {
-			return ErrHouseHasBookings
-		}
+	if m.bookingCounts[id] > 0 {
+		return ErrHouseHasBookings
 	}
 
 	delete(m.houses, id)
+	delete(m.bookingCounts, id)
 	return nil
 }
 
@@ -145,6 +145,7 @@ func (m *HouseManager) BookHouse(houseID int, guestName string, nights int) (Boo
 		TotalPrice: house.PricePerNight * float64(nights),
 	}
 	m.bookings[booking.ID] = booking
+	m.bookingCounts[houseID]++
 	m.nextBookingID++
 	return booking, nil
 }
